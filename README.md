@@ -1,3 +1,3 @@
-# CaT Metallicity calibration from Gaia
+# Lithium rich giants in GALAH
 
 This contains the code for the analysis and paper.
