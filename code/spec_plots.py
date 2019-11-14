@@ -89,7 +89,7 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
     return need_tar
 
 
-galah_dr3 = fits.open(f"{basest_dir}/GALAH_iDR3_combined_190529.fits")[1].data
+galah_dr3 = fits.open(f"{basest_dir}/GALAH_iDR3_main_alpha_190529.fits")[1].data
 
 selection_idx, temp_grav_idx, li_selection_idx, li_rich_idx = selection_cuts(galah_dr3)
 
