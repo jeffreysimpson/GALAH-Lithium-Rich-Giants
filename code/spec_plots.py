@@ -14,6 +14,10 @@ from IPython.display import set_matplotlib_formats
 
 set_matplotlib_formats('retina')
 username = getpass.getuser()
+if username == "z3526655":
+    basest_dir = f"/srv/scratch/z3526655/galah"
+else:
+    basest_dir = f"/Users/{username}/datacentral"
 
 # Create the selection cuts
 
@@ -39,8 +43,8 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
     com = "com"
     if sobject_id[11] == "2":
         com += "2"
-    tar_dir = f"/Users/{username}/datacentral/GALAH/obs/reductions/Iraf_5.3"
-    fits_dir = f"/Users/{username}/datacentral/GALAH_local/obs/reductions/Iraf_5.3"
+    tar_dir = f"{basest_dir}/GALAH/obs/reductions/Iraf_5.3"
+    fits_dir = f"{basest_dir}/GALAH_local/obs/reductions/Iraf_5.3"
     specfile = f"{fits_dir}/{sobject_id[:6]}/{com}/{sobject_id}{camera}.fits"
     new_file_dir = f"{fits_dir}/{sobject_id[:6]}/{com}"
 #     print(specfile)
@@ -85,11 +89,11 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
     return need_tar
 
 
-galah_dr3 = fits.open(f"/Users/{username}/datacentral/GALAH_iDR3_combined_190529.fits")[1].data
+galah_dr3 = fits.open(f"{basest_dir}/GALAH_iDR3_combined_190529.fits")[1].data
 
 selection_idx, temp_grav_idx, li_selection_idx, li_rich_idx = selection_cuts(galah_dr3)
 
-galah_median_dir = f"/Users/{username}/datacentral/GALAH_local/GALAH_median_spectra"
+galah_median_dir = f"{basest_dir}/GALAH_local/GALAH_median_spectra"
 
 line_windows = [{"element": "Li",
                  "plot_centres": [6708],
@@ -142,7 +146,7 @@ for star in galah_dr3[li_rich_idx][0:star_num+1]:
     axes.set_xlabel("Wavelength ($\AA$)")
     axes.set_ylabel("Normalized flux")
     plt.tight_layout()
-    plt.savefig(f"../spec_plots/spec_{star['sobject_id']}.pdf",
+    plt.savefig(f"spec_plots/spec_{star['sobject_id']}.pdf",
                 bbox_inches='tight')
     plt.close('all')
 #     break
