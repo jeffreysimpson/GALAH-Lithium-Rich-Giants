@@ -95,6 +95,18 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
                 **kwargs)
     return need_tar
 
+def near_spectra(star, need_tar):
+    with np.errstate(invalid='ignore'):
+        teff_idx = (galah_dr3['teff'] > star['teff']-50) & (galah_dr3['teff'] < star['teff']+50)
+        logg_idx = (galah_dr3['logg'] > star['logg']-0.2) & (galah_dr3['logg'] < star['logg']+0.2)
+        feh_idx = (galah_dr3['fe_h'] > star['fe_h']-0.2) & (galah_dr3['fe_h'] < star['fe_h']+0.2)
+        snr_idx = galah_dr3["snr_c2_iraf"] > 100
+    temp_grav_selection = galah_dr3[selection_idx & teff_idx & logg_idx & feh_idx & snr_idx]
+    for test_star in temp_grav_selection[np.argsort(temp_grav_selection["snr_c2_iraf"])[::-1]][0:10]:
+        need_tar = spec_plotting(axes, test_star, 3, line_windows[0],
+                                 dict(lw=0.5, alpha=0.6, c=m.to_rgba(star['fe_h'])), need_tar)
+    return need_tar
+
 
 galah_dr3 = fits.open(f"{basest_dir}/GALAH_iDR3_main_alpha_190529.fits")[1].data
 
@@ -127,29 +139,20 @@ for star in galah_dr3[li_rich_idx][0:star_num+1]:
                              figsize=(10, 5), sharex='col', sharey='col')
     need_tar = spec_plotting(axes, star, 3,
                              line_windows[0], dict(lw=1, c='k'), need_tar)
-    try:
-        spec_list = os.listdir(median_spec_dir)
-        useful_specs = [spec for spec in spec_list if spec.endswith("_3.csv")]
-        for useful_spec in sorted(useful_specs):
-            spec_open = pd.read_csv(f"{median_spec_dir}/{useful_spec}",
-                                    comment='#', names=['wave', 'flux'])
-            axes.plot(spec_open['wave'],
-                      spec_open['flux'],
-                      c=m.to_rgba(float(useful_spec[8:11].replace('p', '+').replace('m', '-'))/10),
-                      alpha=0.6,
-                      lw=0.5,
-                      label=useful_spec[8:11])
-    except FileNotFoundError:
-        teff_idx = (galah_dr3['teff'] > star['teff']-50) & (galah_dr3['teff'] < star['teff']+50)
-        logg_idx = (galah_dr3['logg'] > star['logg']-0.2) & (galah_dr3['logg'] < star['logg']+0.2)
-        feh_idx = (galah_dr3['fe_h'] > star['fe_h']-0.2) & (galah_dr3['fe_h'] < star['fe_h']+0.2)
-        snr_idx = galah_dr3["snr_c2_iraf"] > 100
-        temp_grav_selection = galah_dr3[selection_idx & teff_idx & logg_idx & feh_idx & snr_idx]
-        for test_star in temp_grav_selection[np.argsort(temp_grav_selection["snr_c2_iraf"])[::-1]][0:10]:
-            need_tar = spec_plotting(axes, test_star, 3, line_windows[0],
-                                     dict(lw=0.5, alpha=0.6, c=m.to_rgba(star['fe_h'])), need_tar)
-
-    for line in [6703.576, 6705.105, 6707.76, 6707.98, 6710.323, 6713.044]:
+    # try:
+    #     spec_list = os.listdir(median_spec_dir)
+    #     useful_specs = [spec for spec in spec_list if spec.endswith("_3.csv")]
+    #     for useful_spec in sorted(useful_specs):
+    #         spec_open = pd.read_csv(f"{median_spec_dir}/{useful_spec}",
+    #                                 comment='#', names=['wave', 'flux'])
+    #         axes.plot(spec_open['wave'],
+    #                   spec_open['flux'],
+    #                   c=m.to_rgba(float(useful_spec[8:11].replace('p', '+').replace('m', '-'))/10),
+    #                   alpha=0.6,
+    #                   lw=0.5,
+    #                   label=useful_spec[8:11])
+    # except FileNotFoundError:
+    need_tar = near_spectra(star, need_tar)
         axes.axvspan(line-0.05, line+0.05, alpha=0.1, color='k')
     title_str = f"{star['sobject_id']}"
     for extra_str in [f" T$=${teff_round:0.0f}",
