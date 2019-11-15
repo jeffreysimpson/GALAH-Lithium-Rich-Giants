@@ -51,7 +51,7 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
 #     print(specfile)
     if not os.path.isfile(specfile):
         tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
-    #     print(tar_name)
+        print(tar_name)
         if os.path.isfile(tar_name):
             tar_command = f"tar -xvzf {tar_name} */{sobject_id}{camera}.fits "
             print(f"Extracting: {specfile}")
