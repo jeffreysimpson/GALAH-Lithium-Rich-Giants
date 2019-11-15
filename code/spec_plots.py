@@ -3,6 +3,7 @@ import os
 import shutil
 import subprocess
 
+import logging
 import astropy.units as u
 import matplotlib as mpl
 import matplotlib.cm as cm
@@ -25,7 +26,8 @@ if username == "z3526655":
 else:
     basest_dir = f"/Users/{username}/datacentral"
 
-# Create the selection cuts
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(message)s')
 
 
 def selection_cuts(table):
@@ -58,27 +60,27 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
         tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
         if os.path.isfile(tar_name):
             tar_command = f"tar -xvzf {tar_name} */{sobject_id}{camera}.fits "
-            print(f"Extracting: {specfile}")
-            print(tar_command)
+            logging.info(f"Need to extract: {specfile}")
+            logging.info(f"Using this tar command: {tar_command}")
             cp = subprocess.run(
                 tar_command.split(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
             #  for some reason katana is different?!
             if username == "z3526655":
-                print(cp.stdout)
+                logging.info(f"Where file ended up: {cp.stdout}")
                 untarred_file_location = cp.stdout[:-1]
             else:
-                print(cp.stderr)
+                logging.info(f"Where file ended up: {cp.stderr}")
                 untarred_file_location = cp.stderr[2:-1]
             if not os.path.exists(new_file_dir):
                 os.makedirs(new_file_dir)
             try:
-                print(f"current: {untarred_file_location}")
-                print(f"wanted: {specfile}")
+                logging.info(f"Current location: {untarred_file_location}")
+                logging.info(f"New location: {specfile}")
                 shutil.move(untarred_file_location, specfile)
             except FileNotFoundError:
-                print("No file to move?!")
+                logging.info("No file to move?!")
                 return need_tar
         else:
             need_tar.add(tar_name.split("/")[8])
@@ -124,9 +126,12 @@ cmap = cm.viridis_r
 m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 need_tar = set()
-sobject_id = 150406001401117
-for star in galah_dr3[galah_dr3['sobject_id'] == sobject_id]:
+sobject_id = 171228003701198
 # for star in galah_dr3[li_rich_idx][0:star_num+1]:
+
+for star in galah_dr3[galah_dr3['sobject_id'] == sobject_id]:
+    sobject_id = str(star['sobject_id'])
+    logging.info(f"Starting sobject_id {sobject_id}")
     with np.errstate(invalid='ignore'):
         teff_round = np.round(star['teff']/50)*50
         logg_round = np.round(star['logg']/0.2)*0.2
@@ -175,4 +180,4 @@ for star in galah_dr3[galah_dr3['sobject_id'] == sobject_id]:
                 bbox_inches='tight')
     plt.close('all')
 #     break
-print(need_tar)
+logging.info(need_tar)
