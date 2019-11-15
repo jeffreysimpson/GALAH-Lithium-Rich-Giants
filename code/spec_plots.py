@@ -142,7 +142,7 @@ for star in galah_dr3[li_rich_idx][0:star_num+1]:
     except FileNotFoundError:
         teff_idx = (galah_dr3['teff'] > star['teff']-50) & (galah_dr3['teff'] < star['teff']+50)
         logg_idx = (galah_dr3['logg'] > star['logg']-0.2) & (galah_dr3['logg'] < star['logg']+0.2)
-        feh_idx = (galah_dr3['fe_h'] > star['fe_h']-0.5) & (galah_dr3['fe_h'] < star['fe_h']+0.5)
+        feh_idx = (galah_dr3['fe_h'] > star['fe_h']-0.2) & (galah_dr3['fe_h'] < star['fe_h']+0.2)
         snr_idx = galah_dr3["snr_c2_iraf"] > 100
         temp_grav_selection = galah_dr3[selection_idx & teff_idx & logg_idx & feh_idx & snr_idx]
         for test_star in temp_grav_selection[np.argsort(temp_grav_selection["snr_c2_iraf"])[::-1]][0:10]:
