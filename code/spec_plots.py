@@ -4,13 +4,19 @@ import shutil
 import subprocess
 
 import astropy.units as u
+import matplotlib as mpl
+import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from astropy import constants as const
+from astropy.convolution import Gaussian1DKernel, convolve
 from astropy.io import fits
 from IPython.display import set_matplotlib_formats
+
+# Create kernel
+g = Gaussian1DKernel(stddev=100)
 
 set_matplotlib_formats('retina')
 username = getpass.getuser()
@@ -37,7 +43,7 @@ def selection_cuts(table):
 
 def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
     v_t = star['rv_guess'] * u.km / u.s
-    v_b = 0. * u.km / u.s  # star['v_bary']
+    # v_b = 0. * u.km / u.s  # star['v_bary']
     rv_offset = 1 / ((v_t) / const.c + 1)
     camera = 3
     sobject_id = str(star['sobject_id'])
@@ -48,10 +54,8 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
     fits_dir = f"{basest_dir}/GALAH_local/obs/reductions/Iraf_5.3"
     specfile = f"{fits_dir}/{sobject_id[:6]}/{com}/{sobject_id}{camera}.fits"
     new_file_dir = f"{fits_dir}/{sobject_id[:6]}/{com}"
-#     print(specfile)
     if not os.path.isfile(specfile):
         tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
-    #     print(tar_name)
         if os.path.isfile(tar_name):
             tar_command = f"tar -xvzf {tar_name} */{sobject_id}{camera}.fits "
             print(f"Extracting: {specfile}")
@@ -79,15 +83,10 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
             (spec[0].header['CDELT1'] *
              (np.arange(len(spec[0].data)) + 1 - spec[0].header['CRPIX1']) +
              spec[0].header['CRVAL1']))
-        plot_range = [line_window["plot_centres"][0] - line_window['range'],
-                      line_window["plot_centres"][0] + line_window['range']]
-        median_idx = (
-            wavelength > plot_range[0] -
-            0) & (
-            wavelength < plot_range[1] +
-            0)
-        ax.plot((wavelength * rv_offset)[median_idx],
-                1.02*(spec[0].data / np.nanpercentile(spec[0].data[median_idx], 90))[median_idx],
+        # Convolve data
+        z = convolve(spec[0].data, g)*0.95
+        ax.plot((wavelength * rv_offset),  # [median_idx],
+                (spec[0].data/z),  # [median_idx],
                 **kwargs)
     return need_tar
 
@@ -103,8 +102,12 @@ line_windows = [{"element": "Li",
                  "range": 20,
                  "camera": [3]}]
 
+norm = mpl.colors.Normalize(vmin=-1, vmax=0.2)
+cmap = cm.viridis_r
+m = cm.ScalarMappable(norm=norm, cmap=cmap)
+
 need_tar = set()
-star_num = 2
+star_num = 0
 for star in galah_dr3[li_rich_idx][0:star_num+1]:
     with np.errstate(invalid='ignore'):
         teff_round = np.round(star['teff']/50)*50
@@ -117,14 +120,20 @@ for star in galah_dr3[li_rich_idx][0:star_num+1]:
     fig, axes = plt.subplots(nrows=1,
                              ncols=1,
                              figsize=(10, 5), sharex='col', sharey='col')
-    need_tar = spec_plotting(axes, star, 3, line_windows[0], dict(lw=1, c='k'), need_tar)
+    need_tar = spec_plotting(axes, star, 3,
+                             line_windows[0], dict(lw=1, c='k'), need_tar)
     try:
         spec_list = os.listdir(median_spec_dir)
         useful_specs = [spec for spec in spec_list if spec.endswith("_3.csv")]
         for useful_spec in sorted(useful_specs):
             spec_open = pd.read_csv(f"{median_spec_dir}/{useful_spec}",
                                     comment='#', names=['wave', 'flux'])
-            axes.plot(spec_open['wave'], spec_open['flux'], alpha=0.3, label=useful_spec[8:11])
+            axes.plot(spec_open['wave'],
+                      spec_open['flux'],
+                      c=m.to_rgba(float(useful_spec[8:11].replace('p', '+').replace('m', '-'))/10),
+                      alpha=0.6,
+                      lw=0.5,
+                      label=useful_spec[8:11])
     except FileNotFoundError:
         teff_idx = (galah_dr3['teff'] > star['teff']-50) & (galah_dr3['teff'] < star['teff']+50)
         logg_idx = (galah_dr3['logg'] > star['logg']-0.2) & (galah_dr3['logg'] < star['logg']+0.2)
@@ -132,7 +141,8 @@ for star in galah_dr3[li_rich_idx][0:star_num+1]:
         snr_idx = galah_dr3["snr_c2_iraf"] > 100
         temp_grav_selection = galah_dr3[selection_idx & teff_idx & logg_idx & feh_idx & snr_idx]
         for test_star in temp_grav_selection[np.argsort(temp_grav_selection["snr_c2_iraf"])[::-1]][0:10]:
-            need_tar = spec_plotting(axes, test_star, 3, line_windows[0], dict(alpha=0.3), need_tar)
+            need_tar = spec_plotting(axes, test_star, 3, line_windows[0],
+                                     dict(lw=0.5, alpha=0.6, c=m.to_rgba(star['fe_h'])), need_tar)
 
     for line in [6703.576, 6705.105, 6707.76, 6707.98, 6710.323, 6713.044]:
         axes.axvspan(line-0.05, line+0.05, alpha=0.1, color='k')
