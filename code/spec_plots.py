@@ -23,14 +23,15 @@ else:
 
 
 def selection_cuts(table):
-    selection_idx = (table['flag_sp'] == 0) & (table['flag_fe_h'] == 0)
-    temp_grav_idx = (table['teff'] > 4000) & (table['teff'] < 6000) & (
-        table['logg'] > -1) & (table['logg'] < 3)
-    li_selection_idx = selection_idx & temp_grav_idx & (
-        np.in1d(table['flag_li'], [0, 1])) & (table['mass'] < 2.5)
-    li_rich_idx = ((li_selection_idx) &
-                   (table['a_li'] > 1.7) &
-                   (table['flag_li'] == 0))
+    with np.errstate(invalid='ignore'):
+        selection_idx = (table['flag_sp'] == 0) & (table['flag_fe_h'] == 0)
+        temp_grav_idx = (table['teff'] > 4000) & (table['teff'] < 6000) & (
+            table['logg'] > -1) & (table['logg'] < 3)
+        li_selection_idx = selection_idx & temp_grav_idx & (
+            np.in1d(table['flag_li'], [0, 1])) & (table['mass'] < 2.5)
+        li_rich_idx = ((li_selection_idx) &
+                       (table['a_li'] > 1.7) &
+                       (table['flag_li'] == 0))
     return selection_idx, temp_grav_idx, li_selection_idx, li_rich_idx
 
 
@@ -105,10 +106,10 @@ line_windows = [{"element": "Li",
 need_tar = set()
 star_num = 2
 for star in galah_dr3[li_rich_idx][0:star_num+1]:
-
-    teff_round = np.round(star['teff']/50)*50
-    logg_round = np.round(star['logg']/0.2)*0.2
-    fe_h_round = np.round(star['fe_h']/0.1)*0.1
+    with np.errstate(invalid='ignore'):
+        teff_round = np.round(star['teff']/50)*50
+        logg_round = np.round(star['logg']/0.2)*0.2
+        fe_h_round = np.round(star['fe_h']/0.1)*0.1
     fe_h_str = f"{fe_h_round:+0.1f}".replace("+", "p").replace("-", "m").replace(".", "")
     median_spec_dir = f"{galah_median_dir}/T{teff_round:0.0f}/g{logg_round*10:0.0f}"
 
