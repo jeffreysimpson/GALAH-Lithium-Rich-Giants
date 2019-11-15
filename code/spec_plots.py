@@ -64,8 +64,13 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
                 tar_command.split(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
-            print(cp.stdout)
-            untarred_file_location = cp.stdout[:-1]
+            #  for some reason katana is different?!
+            if username == "z3526655":
+                print(cp.stdout)
+                untarred_file_location = cp.stdout[:-1]
+            else:
+                print(cp.stderr)
+                untarred_file_location = cp.stderr[2:-1]
             if not os.path.exists(new_file_dir):
                 os.makedirs(new_file_dir)
             try:
