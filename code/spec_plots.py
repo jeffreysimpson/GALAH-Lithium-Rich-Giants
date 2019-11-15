@@ -85,6 +85,7 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
         else:
             need_tar.add(tar_name.split("/")[8])
             return need_tar
+    logging.info(f"Ploting: {specfile}")
     with fits.open(specfile) as spec:
         wavelength = (
             (spec[0].header['CDELT1'] *
