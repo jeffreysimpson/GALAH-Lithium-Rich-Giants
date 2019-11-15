@@ -124,7 +124,7 @@ cmap = cm.viridis_r
 m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 need_tar = set()
-sobject_id = 170725003601182
+sobject_id = 150406001401117
 for star in galah_dr3[galah_dr3['sobject_id'] == sobject_id]:
 # for star in galah_dr3[li_rich_idx][0:star_num+1]:
     with np.errstate(invalid='ignore'):
@@ -169,7 +169,7 @@ for star in galah_dr3[galah_dr3['sobject_id'] == sobject_id]:
     axes.set_ylim(0, 1.1)
     axes.set_xlabel(r"Wavelength ($\AA$)")
     axes.set_ylabel("Normalized flux")
-    cbar = plt.colorbar(m)
+#    cbar = plt.colorbar(m)
     plt.tight_layout()
     plt.savefig(f"spec_plots/spec_{star['sobject_id']}.pdf",
                 bbox_inches='tight')
