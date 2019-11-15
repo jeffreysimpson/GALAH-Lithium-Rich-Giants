@@ -59,11 +59,13 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
                 tar_command.split(),
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE)
-            untarred_file_location = cp.stderr[2:-1]
-            print(untarred_file_location, specfile)
+            print(cp.stdout)
+            untarred_file_location = cp.stdout[:-1]
             if not os.path.exists(new_file_dir):
                 os.makedirs(new_file_dir)
             try:
+                print(f"current: {untarred_file_location}")
+                print(f"wanted: {specfile}")
                 shutil.move(untarred_file_location, specfile)
             except FileNotFoundError:
                 print("No file to move?!")
