@@ -133,7 +133,7 @@ m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 need_tar = set()
 sobject_id = 171228003701198
-star_num = 0
+star_num = 10
 for star in galah_dr3[li_rich_idx][0:star_num+1]:
 # for star in galah_dr3[galah_dr3['sobject_id'] == sobject_id]:
     sobject_id = str(star['sobject_id'])
