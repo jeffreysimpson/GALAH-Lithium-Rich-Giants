@@ -89,9 +89,9 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
              (np.arange(len(spec[0].data)) + 1 - spec[0].header['CRPIX1']) +
              spec[0].header['CRVAL1']))
         # Convolve data
-        z = convolve(spec[0].data, g)*0.95
-        ax.plot((wavelength * rv_offset),  # [median_idx],
-                (spec[0].data/z),  # [median_idx],
+        z = convolve(spec[0].data, g)
+        ax.plot((wavelength * rv_offset),#[median_idx],
+                (spec[0].data/z)*0.95,#[median_idx],
                 **kwargs)
     return need_tar
 
@@ -124,8 +124,9 @@ cmap = cm.viridis_r
 m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 need_tar = set()
-star_num = 0
-for star in galah_dr3[li_rich_idx][0:star_num+1]:
+sobject_id = 170725003601182
+for star in galah_dr3[galah_dr3['sobject_id'] == sobject_id]:
+# for star in galah_dr3[li_rich_idx][0:star_num+1]:
     with np.errstate(invalid='ignore'):
         teff_round = np.round(star['teff']/50)*50
         logg_round = np.round(star['logg']/0.2)*0.2
@@ -153,6 +154,8 @@ for star in galah_dr3[li_rich_idx][0:star_num+1]:
     #                   label=useful_spec[8:11])
     # except FileNotFoundError:
     need_tar = near_spectra(star, need_tar)
+
+    for line in [6703.576, 6705.105, 6707.76, 6710.323, 6713.044]: #6707.98,
         axes.axvspan(line-0.05, line+0.05, alpha=0.1, color='k')
     title_str = f"{star['sobject_id']}"
     for extra_str in [f" T$=${teff_round:0.0f}",
@@ -160,12 +163,13 @@ for star in galah_dr3[li_rich_idx][0:star_num+1]:
                       f" [Fe/H]$={fe_h_round:0.1f}$",
                       f" A_Li$={star['a_li']:0.2f}$"]:
         title_str += extra_str
-    axes.legend()
+    # axes.legend()
     axes.set_title(title_str)
-    axes.set_xlim(6708-20, 6708+20)
+    axes.set_xlim(6708-10, 6708+10)
     axes.set_ylim(0, 1.1)
-    axes.set_xlabel("Wavelength ($\AA$)")
+    axes.set_xlabel(r"Wavelength ($\AA$)")
     axes.set_ylabel("Normalized flux")
+    cbar = plt.colorbar(m)
     plt.tight_layout()
     plt.savefig(f"spec_plots/spec_{star['sobject_id']}.pdf",
                 bbox_inches='tight')
