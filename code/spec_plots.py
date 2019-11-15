@@ -26,8 +26,13 @@ if username == "z3526655":
 else:
     basest_dir = f"/Users/{username}/datacentral"
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(message)s')
+# logging.basicConfig(level=logging.INFO,
+#                     format='%(asctime)s - %(message)s')
+
+logging.basicConfig(
+    filename=f'output.log',
+    filemode='w', level=logging.INFO,
+    format='%(asctime)s - %(message)s')
 
 
 def selection_cuts(table):
