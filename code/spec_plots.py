@@ -19,7 +19,7 @@ from astropy.io import fits
 from IPython.display import set_matplotlib_formats
 
 # Create kernel
-g = Gaussian1DKernel(stddev=100)
+g = Gaussian1DKernel(stddev=150)
 
 set_matplotlib_formats('retina')
 username = getpass.getuser()
@@ -43,7 +43,7 @@ def selection_cuts(table):
     return selection_idx, temp_grav_idx, li_selection_idx, li_rich_idx
 
 
-def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
+def spec_plotting(ax, star, camera, line_window, kwargs, need_tar, offset=0.95):
     v_t = star['rv_guess'] * u.km / u.s
     # v_b = 0. * u.km / u.s  # star['v_bary']
     rv_offset = 1 / ((v_t) / const.c + 1)
@@ -99,7 +99,7 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
         # Convolve data
         z = convolve(spec[0].data, g)
         ax.plot((wavelength * rv_offset),#[median_idx],
-                (spec[0].data/z)*0.95,#[median_idx],
+                (spec[0].data/z)*offset,#[median_idx],
                 **kwargs)
     return need_tar
 
@@ -199,7 +199,7 @@ fig, axes = plt.subplots(nrows=1,
                          ncols=1,
                          figsize=(10, 5), sharex='col', sharey='col')
 need_tar = spec_plotting(axes, star, 3,
-                         line_windows[0], dict(lw=1, c='k'), need_tar)
+                         line_windows[0], dict(lw=1, c='k'), need_tar, offset=0.94)
 # try:
 #     spec_list = os.listdir(median_spec_dir)
 #     useful_specs = [spec for spec in spec_list if spec.endswith("_3.csv")]
