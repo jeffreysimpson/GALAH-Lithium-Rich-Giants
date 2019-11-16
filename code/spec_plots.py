@@ -29,14 +29,6 @@ if username == "z3526655":
 else:
     basest_dir = f"/Users/{username}/datacentral"
 
-logging.basicConfig(level=logging.INFO,
-                    format='%(asctime)s - %(message)s')
-
-# logging.basicConfig(
-#     filename=f'output.log',
-#     filemode='w', level=logging.INFO,
-#     format='%(asctime)s - %(message)s')
-
 
 def selection_cuts(table):
     with np.errstate(invalid='ignore'):
@@ -136,6 +128,9 @@ parser.add_argument('-index_num',
                     required=False,
                     type=int,
                     help="index_num to plot")
+parser.add_argument('--log_to_screen', dest='log', action='store_true')
+parser.add_argument('--log_to_file', dest='log', action='store_false')
+parser.set_defaults(log=False)
 
 if len(sys.argv[1:]) in [0, 4]:
     print()
@@ -146,6 +141,16 @@ if len(sys.argv[1:]) in [0, 4]:
 args = parser.parse_args()
 sobject_id = args.sobject_id
 index_num = args.index_num
+LOG_TO_SCREEN = args.log
+
+if LOG_TO_SCREEN:
+    logging.basicConfig(level=logging.INFO,
+                        format='%(asctime)s - %(message)s')
+else:
+    logging.basicConfig(
+        filename=f'output.log',
+        filemode='w', level=logging.INFO,
+        format='%(asctime)s - %(message)s')
 
 galah_dr3 = fits.open(f"{basest_dir}/GALAH_iDR3_main_alpha_190529.fits")[1].data
 
