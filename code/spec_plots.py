@@ -108,7 +108,8 @@ def near_spectra(star, need_tar):
         logg_idx = (galah_dr3['logg'] > star['logg']-0.2) & (galah_dr3['logg'] < star['logg']+0.2)
         feh_idx = (galah_dr3['fe_h'] > star['fe_h']-0.2) & (galah_dr3['fe_h'] < star['fe_h']+0.2)
         snr_idx = galah_dr3["snr_c2_iraf"] > 100
-    temp_grav_selection = galah_dr3[selection_idx & teff_idx & logg_idx & feh_idx & snr_idx]
+        no_same_star_idx = ~np.in1d(galah_dr3['source_id'], star['source_id'])
+    temp_grav_selection = galah_dr3[selection_idx & teff_idx & logg_idx & feh_idx & snr_idx & no_same_star_idx]
     for test_star in temp_grav_selection[np.argsort(temp_grav_selection["snr_c2_iraf"])[::-1]][0:10]:
         need_tar = spec_plotting(axes, test_star, 3, line_windows[0],
                                  dict(lw=0.5, alpha=0.6, c=m.to_rgba(star['fe_h'])), need_tar)
