@@ -130,7 +130,7 @@ parser.add_argument('-index_num',
                     help="index_num to plot")
 parser.add_argument('--log_to_screen', dest='log', action='store_true')
 parser.add_argument('--log_to_file', dest='log', action='store_false')
-parser.set_defaults(log=False)
+parser.set_defaults(log=True)
 
 if len(sys.argv[1:]) in [0, 4]:
     print()
