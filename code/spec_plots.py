@@ -58,11 +58,11 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
     new_file_dir = f"{fits_dir}/{sobject_id[:6]}/{com}"
     if not os.path.isfile(specfile):
         tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
-        if username == "z3526655":
-            logging.info(f"Copying the file to local scratch: {local_scratch}")
-            tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
-            shutil.copy(tar_name, f'{local_scratch}/{tar_name.split("/")[-1]}')
-            tar_name = f'{local_scratch}/{tar_name.split("/")[-1]}'
+        # if username == "z3526655":
+            # logging.info(f"Copying the file to local scratch: {local_scratch}")
+            # tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
+            # shutil.copy(tar_name, f'{local_scratch}/{tar_name.split("/")[-1]}')
+            # tar_name = f'{local_scratch}/{tar_name.split("/")[-1]}'
         if os.path.isfile(tar_name):
             tar_command = f"tar -xvzf {tar_name} */{sobject_id}{camera}.fits "
             logging.info(f"Need to extract: {specfile}")
