@@ -97,8 +97,11 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar, offset=0.95):
              spec[0].header['CRVAL1']))
         # Convolve data
         z = convolve(spec[0].data, g)
-        ax.plot((wavelength * rv_offset),#[median_idx],
-                (spec[0].data/z)*offset,#[median_idx],
+        normed_spec = (spec[0].data)/z
+        percentile_region_idx = (wavelength > 6708-10) & (wavelength < 6708+10)
+        percentile_norm = np.percentile(normed_spec[percentile_region_idx], 99)
+        ax.plot(wavelength * rv_offset,
+                normed_spec/percentile_norm,
                 **kwargs)
     return need_tar
 
