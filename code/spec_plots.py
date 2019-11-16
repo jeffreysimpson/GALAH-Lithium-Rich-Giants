@@ -142,15 +142,6 @@ sobject_id = args.sobject_id
 index_num = args.index_num
 LOG_TO_SCREEN = args.log
 
-if LOG_TO_SCREEN:
-    logging.basicConfig(level=logging.INFO,
-                        format='%(asctime)s - %(message)s')
-else:
-    logging.basicConfig(
-        filename=f'output.log',
-        filemode='w', level=logging.INFO,
-        format='%(asctime)s - %(message)s')
-
 galah_dr3 = fits.open(f"{basest_dir}/GALAH_iDR3_main_alpha_190529.fits")[1].data
 
 (selection_idx, temp_grav_idx,
@@ -162,6 +153,15 @@ line_windows = [{"element": "Li",
                  "plot_centres": [6708],
                  "range": 20,
                  "camera": [3]}]
+
+if LOG_TO_SCREEN:
+    logging.basicConfig(level=logging.INFO,
+                        format='%(asctime)s - %(message)s')
+else:
+    logging.basicConfig(
+        filename=f'logs/output_{sobject_id}_{index_num}.log',
+        filemode='w', level=logging.INFO,
+        format='%(asctime)s - %(message)s')
 
 if sobject_id is not None:
     try:
