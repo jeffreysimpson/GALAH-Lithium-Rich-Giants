@@ -25,7 +25,7 @@ set_matplotlib_formats('retina')
 username = getpass.getuser()
 if username == "z3526655":
     basest_dir = f"/srv/scratch/z3526655/galah"
-    local_scratch = os.environ['TMPDIR']
+    # local_scratch = os.environ['TMPDIR']
 else:
     basest_dir = f"/Users/{username}/datacentral"
 
