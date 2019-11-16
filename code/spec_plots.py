@@ -63,9 +63,12 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
     specfile = f"{fits_dir}/{sobject_id[:6]}/{com}/{sobject_id}{camera}.fits"
     new_file_dir = f"{fits_dir}/{sobject_id[:6]}/{com}"
     if not os.path.isfile(specfile):
-        if username == "z3526655":
-            logging.info(local_scratch)
         tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
+        if username == "z3526655":
+            logging.info(f"Copying the file to local scratch: {local_scratch}")
+            tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
+            shutil.copy(tar_name, f"local_scratch/{tar_name.split("/"}[-1]")
+            tar_name = f"local_scratch/{tar_name.split("/"}[-1]"
         if os.path.isfile(tar_name):
             tar_command = f"tar -xvzf {tar_name} */{sobject_id}{camera}.fits "
             logging.info(f"Need to extract: {specfile}")
@@ -137,7 +140,7 @@ m = cm.ScalarMappable(norm=norm, cmap=cmap)
 need_tar = set()
 sobject_id = 171228003701198
 star_num = 10
-for star in galah_dr3[li_rich_idx][0:star_num+1]:
+for star in galah_dr3[li_rich_idx][150:155+1]:
 # for star in galah_dr3[galah_dr3['sobject_id'] == sobject_id]:
     sobject_id = str(star['sobject_id'])
     logging.info(f"Starting sobject_id {sobject_id}")
