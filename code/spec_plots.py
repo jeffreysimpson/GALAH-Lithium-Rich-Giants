@@ -1,15 +1,17 @@
+import argparse
 import getpass
+import logging
 import os
 import shutil
 import subprocess
+import sys
+from os.path import basename
 
-import logging
 import astropy.units as u
 import matplotlib as mpl
 import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
 import seaborn as sns
 from astropy import constants as const
 from astropy.convolution import Gaussian1DKernel, convolve
@@ -27,13 +29,13 @@ if username == "z3526655":
 else:
     basest_dir = f"/Users/{username}/datacentral"
 
-# logging.basicConfig(level=logging.INFO,
-#                     format='%(asctime)s - %(message)s')
+logging.basicConfig(level=logging.INFO,
+                    format='%(asctime)s - %(message)s')
 
-logging.basicConfig(
-    filename=f'output.log',
-    filemode='w', level=logging.INFO,
-    format='%(asctime)s - %(message)s')
+# logging.basicConfig(
+#     filename=f'output.log',
+#     filemode='w', level=logging.INFO,
+#     format='%(asctime)s - %(message)s')
 
 
 def selection_cuts(table):
@@ -122,9 +124,33 @@ def near_spectra(star, need_tar):
     return need_tar
 
 
+parser = argparse.ArgumentParser(
+    description="Create the lithium spec plot. Only provide one of the arguments.",
+    usage=f"{basename(__file__)} -sobject_id <sobject_id> -index_num <index_number>")
+
+parser.add_argument('-sobject_id',
+                    required=False,
+                    type=int,
+                    help="sobject_id to plot")
+parser.add_argument('-index_num',
+                    required=False,
+                    type=int,
+                    help="index_num to plot")
+
+if len(sys.argv[1:]) in [0, 4]:
+    print()
+    parser.print_help()
+    parser.exit()
+    print()
+
+args = parser.parse_args()
+sobject_id = args.sobject_id
+index_num = args.index_num
+
 galah_dr3 = fits.open(f"{basest_dir}/GALAH_iDR3_main_alpha_190529.fits")[1].data
 
-selection_idx, temp_grav_idx, li_selection_idx, li_rich_idx = selection_cuts(galah_dr3)
+(selection_idx, temp_grav_idx,
+ li_selection_idx, li_rich_idx) = selection_cuts(galah_dr3)
 
 galah_median_dir = f"{basest_dir}/GALAH_local/GALAH_median_spectra"
 
@@ -133,63 +159,75 @@ line_windows = [{"element": "Li",
                  "range": 20,
                  "camera": [3]}]
 
+if sobject_id is not None:
+    try:
+        star = galah_dr3[galah_dr3['sobject_id'] == sobject_id][0]
+    except IndexError:
+        logging.info(f"Not valid sobject_id")
+        sys.exit()
+if index_num is not None:
+    try:
+        star = galah_dr3[li_rich_idx][index_num]
+        sobject_id = star['sobject_id']
+    except IndexError:
+        logging.info(f"Index out of range. Largest value is {np.sum(li_rich_idx)-1}")
+        sys.exit()
+
+
 norm = mpl.colors.Normalize(vmin=-1, vmax=0.2)
 cmap = cm.viridis_r
 m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 need_tar = set()
-sobject_id = 171228003701198
-star_num = 10
-for star in galah_dr3[li_rich_idx][160:165+1]:
-# for star in galah_dr3[galah_dr3['sobject_id'] == sobject_id]:
-    sobject_id = str(star['sobject_id'])
-    logging.info(f"Starting sobject_id {sobject_id}")
-    with np.errstate(invalid='ignore'):
-        teff_round = np.round(star['teff']/50)*50
-        logg_round = np.round(star['logg']/0.2)*0.2
-        fe_h_round = np.round(star['fe_h']/0.1)*0.1
-    fe_h_str = f"{fe_h_round:+0.1f}".replace("+", "p").replace("-", "m").replace(".", "")
-    median_spec_dir = f"{galah_median_dir}/T{teff_round:0.0f}/g{logg_round*10:0.0f}"
 
-    sns.set_context("paper", font_scale=1.2)
-    fig, axes = plt.subplots(nrows=1,
-                             ncols=1,
-                             figsize=(10, 5), sharex='col', sharey='col')
-    need_tar = spec_plotting(axes, star, 3,
-                             line_windows[0], dict(lw=1, c='k'), need_tar)
-    # try:
-    #     spec_list = os.listdir(median_spec_dir)
-    #     useful_specs = [spec for spec in spec_list if spec.endswith("_3.csv")]
-    #     for useful_spec in sorted(useful_specs):
-    #         spec_open = pd.read_csv(f"{median_spec_dir}/{useful_spec}",
-    #                                 comment='#', names=['wave', 'flux'])
-    #         axes.plot(spec_open['wave'],
-    #                   spec_open['flux'],
-    #                   c=m.to_rgba(float(useful_spec[8:11].replace('p', '+').replace('m', '-'))/10),
-    #                   alpha=0.6,
-    #                   lw=0.5,
-    #                   label=useful_spec[8:11])
-    # except FileNotFoundError:
-    need_tar = near_spectra(star, need_tar)
+# for star in galah_dr3[li_rich_idx][160:165+1]:
+logging.info(f"Starting sobject_id {sobject_id}")
+with np.errstate(invalid='ignore'):
+    teff_round = np.round(star['teff']/50)*50
+    logg_round = np.round(star['logg']/0.2)*0.2
+    fe_h_round = np.round(star['fe_h']/0.1)*0.1
+fe_h_str = f"{fe_h_round:+0.1f}".replace("+", "p").replace("-", "m").replace(".", "")
+median_spec_dir = f"{galah_median_dir}/T{teff_round:0.0f}/g{logg_round*10:0.0f}"
 
-    for line in [6703.576, 6705.105, 6707.76, 6710.323, 6713.044]: #6707.98,
-        axes.axvspan(line-0.05, line+0.05, alpha=0.1, color='k')
-    title_str = f"{star['sobject_id']}"
-    for extra_str in [f" T$=${teff_round:0.0f}",
-                      f" $\log g={logg_round:0.1f}$",
-                      f" [Fe/H]$={fe_h_round:0.1f}$",
-                      f" A_Li$={star['a_li']:0.2f}$"]:
-        title_str += extra_str
-    # axes.legend()
-    axes.set_title(title_str)
-    axes.set_xlim(6708-10, 6708+10)
-    axes.set_ylim(0, 1.1)
-    axes.set_xlabel(r"Wavelength ($\AA$)")
-    axes.set_ylabel("Normalized flux")
+sns.set_context("paper", font_scale=1.2)
+fig, axes = plt.subplots(nrows=1,
+                         ncols=1,
+                         figsize=(10, 5), sharex='col', sharey='col')
+need_tar = spec_plotting(axes, star, 3,
+                         line_windows[0], dict(lw=1, c='k'), need_tar)
+# try:
+#     spec_list = os.listdir(median_spec_dir)
+#     useful_specs = [spec for spec in spec_list if spec.endswith("_3.csv")]
+#     for useful_spec in sorted(useful_specs):
+#         spec_open = pd.read_csv(f"{median_spec_dir}/{useful_spec}",
+#                                 comment='#', names=['wave', 'flux'])
+#         axes.plot(spec_open['wave'],
+#                   spec_open['flux'],
+#                   c=m.to_rgba(float(useful_spec[8:11].replace('p', '+').replace('m', '-'))/10),
+#                   alpha=0.6,
+#                   lw=0.5,
+#                   label=useful_spec[8:11])
+# except FileNotFoundError:
+need_tar = near_spectra(star, need_tar)
+
+for line in [6703.576, 6705.105, 6707.76, 6710.323, 6713.044]: #6707.98,
+    axes.axvspan(line-0.05, line+0.05, alpha=0.1, color='k')
+title_str = f"{star['sobject_id']}"
+for extra_str in [f" T$=${teff_round:0.0f}",
+                  f" $\log g={logg_round:0.1f}$",
+                  f" [Fe/H]$={fe_h_round:0.1f}$",
+                  f" A_Li$={star['a_li']:0.2f}$"]:
+    title_str += extra_str
+# axes.legend()
+axes.set_title(title_str)
+axes.set_xlim(6708-10, 6708+10)
+axes.set_ylim(0, 1.1)
+axes.set_xlabel(r"Wavelength ($\AA$)")
+axes.set_ylabel("Normalized flux")
 #    cbar = plt.colorbar(m)
-    plt.tight_layout()
-    plt.savefig(f"spec_plots/spec_{star['sobject_id']}.pdf",
-                bbox_inches='tight')
-    plt.close('all')
+plt.tight_layout()
+plt.savefig(f"spec_plots/spec_{star['sobject_id']}.pdf",
+            bbox_inches='tight')
+plt.close('all')
 #     break
 logging.info(need_tar)
