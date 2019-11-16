@@ -23,6 +23,7 @@ set_matplotlib_formats('retina')
 username = getpass.getuser()
 if username == "z3526655":
     basest_dir = f"/srv/scratch/z3526655/galah"
+    local_scratch = os.environ['TMPDIR']
 else:
     basest_dir = f"/Users/{username}/datacentral"
 
@@ -62,6 +63,8 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar):
     specfile = f"{fits_dir}/{sobject_id[:6]}/{com}/{sobject_id}{camera}.fits"
     new_file_dir = f"{fits_dir}/{sobject_id[:6]}/{com}"
     if not os.path.isfile(specfile):
+        if username == "z3526655":
+            logging.info(local_scratch)
         tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
         if os.path.isfile(tar_name):
             tar_command = f"tar -xvzf {tar_name} */{sobject_id}{camera}.fits "
