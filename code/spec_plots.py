@@ -175,7 +175,7 @@ if sobject_id is not None:
         sys.exit()
 if index_num is not None:
     other_stars_idx = li_selection_idx & ~li_rich_idx
-    other_stars_idx[other_stars_idx.cumsum() > 100] = False
+    other_stars_idx[other_stars_idx.cumsum() > 500] = False
     try:
         star = galah_dr3[other_stars_idx | li_rich_idx][index_num]
         sobject_id = star['sobject_id']
