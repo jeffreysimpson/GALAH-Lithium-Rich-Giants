@@ -8,20 +8,20 @@ import sys
 from os.path import basename
 
 import astropy.units as u
-import matplotlib as mpl
-import matplotlib.cm as cm
+# import matplotlib as mpl
+# import matplotlib.cm as cm
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
 from astropy import constants as const
 from astropy.convolution import Gaussian1DKernel, convolve
 from astropy.io import fits
-from IPython.display import set_matplotlib_formats
+# from IPython.display import set_matplotlib_formats
 
 # Create kernel
 g = Gaussian1DKernel(stddev=150)
 
-set_matplotlib_formats('retina')
+# set_matplotlib_formats('retina')
 username = getpass.getuser()
 if username == "z3526655":
     basest_dir = f"/srv/scratch/z3526655/galah"
@@ -58,10 +58,10 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar, offset=0.95):
     if not os.path.isfile(specfile):
         tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
         # if username == "z3526655":
-            # logging.info(f"Copying the file to local scratch: {local_scratch}")
-            # tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
-            # shutil.copy(tar_name, f'{local_scratch}/{tar_name.split("/")[-1]}')
-            # tar_name = f'{local_scratch}/{tar_name.split("/")[-1]}'
+        # logging.info(f"Copying the file to local scratch: {local_scratch}")
+        # tar_name = f"{tar_dir}/{sobject_id[:6]}/standard/{com}.tar.gz"
+        # shutil.copy(tar_name, f'{local_scratch}/{tar_name.split("/")[-1]}')
+        # tar_name = f'{local_scratch}/{tar_name.split("/")[-1]}'
         if os.path.isfile(tar_name):
             tar_command = f"tar -xvzf {tar_name} */{sobject_id}{camera}.fits "
             logging.info(f"Need to extract: {specfile}")
@@ -105,6 +105,7 @@ def spec_plotting(ax, star, camera, line_window, kwargs, need_tar, offset=0.95):
                 **kwargs)
     return need_tar
 
+
 def near_spectra(star, need_tar):
     with np.errstate(invalid='ignore'):
         teff_idx = (galah_dr3['teff'] > star['teff']-50) & (galah_dr3['teff'] < star['teff']+50)
@@ -112,10 +113,11 @@ def near_spectra(star, need_tar):
         feh_idx = (galah_dr3['fe_h'] > star['fe_h']-0.2) & (galah_dr3['fe_h'] < star['fe_h']+0.2)
         snr_idx = galah_dr3["snr_c2_iraf"] > 100
         no_same_star_idx = ~np.in1d(galah_dr3['source_id'], star['source_id'])
-    temp_grav_selection = galah_dr3[selection_idx & teff_idx & logg_idx & feh_idx & snr_idx & no_same_star_idx]
+    temp_grav_selection = galah_dr3[selection_idx & teff_idx &
+                                    logg_idx & feh_idx & snr_idx & no_same_star_idx]
     for test_star in temp_grav_selection[np.argsort(temp_grav_selection["snr_c2_iraf"])[::-1]][0:10]:
         need_tar = spec_plotting(axes, test_star, 3, line_windows[0],
-                                 dict(lw=0.5, alpha=0.6, c=m.to_rgba(star['fe_h'])), need_tar)
+                                 dict(lw=0.5, alpha=0.6, c='C0'), need_tar)
     return need_tar
 
 
@@ -184,9 +186,9 @@ if index_num is not None:
         sys.exit()
 
 
-norm = mpl.colors.Normalize(vmin=-1, vmax=0.2)
-cmap = cm.viridis_r
-m = cm.ScalarMappable(norm=norm, cmap=cmap)
+# norm = mpl.colors.Normalize(vmin=-1, vmax=0.2)
+# cmap = cm.viridis_r
+# m = cm.ScalarMappable(norm=norm, cmap=cmap)
 
 need_tar = set()
 
@@ -199,10 +201,10 @@ with np.errstate(invalid='ignore'):
 fe_h_str = f"{fe_h_round:+0.1f}".replace("+", "p").replace("-", "m").replace(".", "")
 median_spec_dir = f"{galah_median_dir}/T{teff_round:0.0f}/g{logg_round*10:0.0f}"
 
-sns.set_context("paper", font_scale=1.2)
+sns.set_context("paper", font_scale=1.)
 fig, axes = plt.subplots(nrows=1,
                          ncols=1,
-                         figsize=(10, 5), sharex='col', sharey='col')
+                         figsize=(8, 4), sharex='col', sharey='col')
 need_tar = spec_plotting(axes, star, 3,
                          line_windows[0], dict(lw=1, c='k'), need_tar, offset=0.94)
 # try:
@@ -220,12 +222,12 @@ need_tar = spec_plotting(axes, star, 3,
 # except FileNotFoundError:
 need_tar = near_spectra(star, need_tar)
 
-for line in [6703.576, 6705.105, 6707.76, 6710.323, 6713.044]: #6707.98,
-    axes.axvspan(line-0.05, line+0.05, alpha=0.1, color='k')
+for line in [6703.576, 6705.105, 6707.76, 6710.323, 6713.044]:  # 6707.98,
+    axes.axvspan(line-0.05, line+0.05, alpha=0.1, color='k', lw=0.)
 title_str = f"{star['sobject_id']}"
-for extra_str in [f" T$=${teff_round:0.0f}",
-                  f" $\log g={logg_round:0.1f}$",
-                  f" [Fe/H]$={fe_h_round:0.1f}$",
+for extra_str in [f" T$=${star['teff']:0.0f}",
+                  rf" $\log g={star['logg']:0.1f}$",
+                  f" [Fe/H]$={star['fe_h']:+0.1f}$",
                   f" A_Li$={star['a_li']:0.2f}$"]:
     title_str += extra_str
 # axes.legend()
@@ -236,8 +238,13 @@ axes.set_xlabel(r"Wavelength ($\AA$)")
 axes.set_ylabel("Normalized flux")
 #    cbar = plt.colorbar(m)
 plt.tight_layout()
+<<<<<<< HEAD
 plt.savefig(f"spec_plots/spec_{star['sobject_id']}.png",
             bbox_inches='tight', dpi=72)
+=======
+plt.savefig(f"spec_plots/spec_{star['sobject_id']}.svg",
+            bbox_inches='tight')
+>>>>>>> 311e16237448615fd3c0c688fec9ae1ba5ff2b5f
 plt.close('all')
 #     break
 logging.info(need_tar)
