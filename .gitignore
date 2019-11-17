@@ -114,5 +114,4 @@ data/*
 
 .vscode
 .DS_Store
-com/
-media/
+spec_plots/
