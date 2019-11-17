@@ -238,13 +238,8 @@ axes.set_xlabel(r"Wavelength ($\AA$)")
 axes.set_ylabel("Normalized flux")
 #    cbar = plt.colorbar(m)
 plt.tight_layout()
-<<<<<<< HEAD
-plt.savefig(f"spec_plots/spec_{star['sobject_id']}.png",
-            bbox_inches='tight', dpi=72)
-=======
 plt.savefig(f"spec_plots/spec_{star['sobject_id']}.svg",
             bbox_inches='tight')
->>>>>>> 311e16237448615fd3c0c688fec9ae1ba5ff2b5f
 plt.close('all')
 #     break
 logging.info(need_tar)
