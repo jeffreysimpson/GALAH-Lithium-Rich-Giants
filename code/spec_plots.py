@@ -21,7 +21,7 @@ from IPython.display import set_matplotlib_formats
 # Create kernel
 g = Gaussian1DKernel(stddev=150)
 
-set_matplotlib_formats('retina')
+# set_matplotlib_formats('retina')
 username = getpass.getuser()
 if username == "z3526655":
     basest_dir = f"/srv/scratch/z3526655/galah"
@@ -199,10 +199,10 @@ with np.errstate(invalid='ignore'):
 fe_h_str = f"{fe_h_round:+0.1f}".replace("+", "p").replace("-", "m").replace(".", "")
 median_spec_dir = f"{galah_median_dir}/T{teff_round:0.0f}/g{logg_round*10:0.0f}"
 
-sns.set_context("paper", font_scale=1.2)
+sns.set_context("paper", font_scale=1.)
 fig, axes = plt.subplots(nrows=1,
                          ncols=1,
-                         figsize=(10, 5), sharex='col', sharey='col')
+                         figsize=(8, 4), sharex='col', sharey='col')
 need_tar = spec_plotting(axes, star, 3,
                          line_windows[0], dict(lw=1, c='k'), need_tar, offset=0.94)
 # try:
@@ -221,11 +221,11 @@ need_tar = spec_plotting(axes, star, 3,
 need_tar = near_spectra(star, need_tar)
 
 for line in [6703.576, 6705.105, 6707.76, 6710.323, 6713.044]: #6707.98,
-    axes.axvspan(line-0.05, line+0.05, alpha=0.1, color='k')
+    axes.axvspan(line-0.05, line+0.05, alpha=0.1, color='k', lw=0.)
 title_str = f"{star['sobject_id']}"
-for extra_str in [f" T$=${teff_round:0.0f}",
-                  f" $\log g={logg_round:0.1f}$",
-                  f" [Fe/H]$={fe_h_round:0.1f}$",
+for extra_str in [f" T$=${star['teff']:0.0f}",
+                  rf" $\log g={star['logg']:0.1f}$",
+                  f" [Fe/H]$={star['fe_h']:+0.1f}$",
                   f" A_Li$={star['a_li']:0.2f}$"]:
     title_str += extra_str
 # axes.legend()
@@ -236,7 +236,7 @@ axes.set_xlabel(r"Wavelength ($\AA$)")
 axes.set_ylabel("Normalized flux")
 #    cbar = plt.colorbar(m)
 plt.tight_layout()
-plt.savefig(f"spec_plots/spec_{star['sobject_id']}.pdf",
+plt.savefig(f"spec_plots/spec_{star['sobject_id']}.svg",
             bbox_inches='tight')
 plt.close('all')
 #     break
