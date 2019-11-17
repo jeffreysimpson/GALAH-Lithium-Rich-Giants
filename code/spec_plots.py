@@ -174,8 +174,10 @@ if sobject_id is not None:
         logging.info(f"Not valid sobject_id")
         sys.exit()
 if index_num is not None:
+    other_stars_idx = li_selection_idx & ~li_rich_idx
+    other_stars_idx[other_stars_idx.cumsum() > 100] = False
     try:
-        star = galah_dr3[li_rich_idx][index_num]
+        star = galah_dr3[other_stars_idx | li_rich_idx][index_num]
         sobject_id = star['sobject_id']
     except IndexError:
         logging.info(f"Index out of range. Largest value is {np.sum(li_rich_idx)-1}")
