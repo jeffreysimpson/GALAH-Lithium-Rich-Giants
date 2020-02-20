@@ -50,7 +50,9 @@ def create_selections(galah_idr3, galah_idr3_position):
     li_rich_idx = galah_idr3['a_li'] > li_cut
 
     good_spec_idx = ((galah_idr3['flag_sp'] == 0) &
-                 (galah_idr3['flag_fe_h'] == 0))
+                     (galah_idr3['flag_fe_h'] == 0) &
+                     (~np.isnan(galah_idr3['teff'])) &
+                     (~np.isnan(galah_idr3['logg'])))
     li_measured_idx = ~np.isnan(galah_idr3['a_li'])
 
     giant_idx = ((galah_idr3['teff'] > 3000) &
@@ -81,4 +83,4 @@ def create_selections(galah_idr3, galah_idr3_position):
     #
     # li_rich_giants_idx = good_spec_idx & giant_idx & ~ignore_stars_idx & li_rich_idx
 
-    return ignore_stars_idx, good_spec_idx, giant_idx, li_measured_idx
+    return ignore_stars_idx, good_spec_idx, giant_idx, li_measured_idx, li_rich_idx
