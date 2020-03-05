@@ -29,6 +29,10 @@ def load_table(file_name, UV=False):
     galah_idr3_position = SkyCoord(
         ra=galah_idr3['RA']*u.deg,
         dec=galah_idr3['DEC']*u.deg,
+        pm_ra_cosdec=galah_idr3['pmra']*u.mas/u.yr,
+        pm_dec=galah_idr3['pmdec']*u.mas/u.yr,
+        radial_velocity=galah_idr3['rv_guess']*u.km/u.s,
+        distance=galah_idr3['r_est']*u.pc,
         frame='icrs')
     return galah_idr3, galah_idr3_position
 
@@ -58,7 +62,7 @@ def create_selections(galah_idr3, galah_idr3_position):
     giant_idx = ((galah_idr3['teff'] > 3000) &
                  (galah_idr3['teff'] < 5730) &
                  (galah_idr3['logg'] > -1) &
-                 (galah_idr3['logg'] < 3))
+                 (galah_idr3['logg'] < 3.2))
 
     galactic_centre_idx = np.isin(galah_idr3['field_id'], [6702, 6738, 6736])
 
